@@ -15,6 +15,7 @@ const sideBarImage = [
 
 const RenderChannels = (props) => {
   const { isLoading, isError, data, currentChannel } = props;
+  console.log({ props });
   if (isError && !isLoading) {
     return <>Something went to wrong</>;
   }

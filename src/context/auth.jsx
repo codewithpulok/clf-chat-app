@@ -20,7 +20,7 @@ export const AuthProvider = (props) => {
   const [user, setUser] = React.useState(defaultValues.user);
   const [metadata, setMetadata] = useState(defaultValues.metadata);
   const [session, setSession] = useState(defaultValues.session);
-
+  console.log({ metadata });
   // handle auth state change
   useEffect(() => {
     // look for session on first render
@@ -57,16 +57,61 @@ export const AuthProvider = (props) => {
     return response;
   }, []);
 
+  const API_URL = "https://api-cfl.herokuapp.com/auth/local";
+
+  const signIn = useCallback(async (data) => {
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      const res = await response.json();
+
+      if (res?.jwt) {
+        setSession(res.jwt);
+        setIsAuthenticated(true);
+        setUser(res.user);
+      } else {
+        setSession(null);
+        setIsAuthenticated(false);
+      }
+      return res?.user;
+    } catch (error) {
+      console.log(error);
+    }
+
+    // try {
+    //   const { user, session, error } = await supabase.auth.signInWithPassword(
+    //     data
+    //   );
+
+    //   if (error) console.error("sign-in error:", error);
+
+    //   setSession(session);
+    //   setMetadata(session?.user?.user_metadata || null);
+    //   setUser(user);
+    //   setIsAuthenticated(true);
+    //   setIsLoading(false);
+    //   return { user, session };
+    // } catch (error) {
+    //   console.log("unexpected error during sign-in:", error);
+    // }
+  }, []);
+
   const value = useMemo(
     () => ({
       signout,
+      signIn,
       isLoading,
       isAuthenticated,
       user,
       metadata,
       session,
     }),
-    [isAuthenticated, isLoading, metadata, session, signout, user]
+    [isAuthenticated, isLoading, metadata, session, signout, signIn, user]
   );
 
   return <AuthContext.Provider value={value} {...props} />;
